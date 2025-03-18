@@ -14,60 +14,13 @@ public class block
         this.value = value;
         this.column = column;
         this.row = row;
-        if(value==0)
-        {
-            options = new ArrayList<>();
-            for (int i = 1; i < 10; i++)
-            {
-                options.add(i);
-            }
-        }
+        options = new ArrayList<>();
+        this.grid = 3*(row/3)+(column/3);
+    }
 
-        if(column<=2)
-        {
-            if(row<=2)
-            {
-                grid = 0;
-            }
-            else if(row<=5)
-            {
-                grid = 3;
-            }
-            else
-            {
-                grid = 6;
-            }
-        }
-        else if (column<=5)
-        {
-            if(row<=2)
-            {
-                grid = 1;
-            }
-            else if(row<=5)
-            {
-                grid = 4;
-            }
-            else
-            {
-                grid = 7;
-            }
-        }
-        else
-        {
-            if(row<=2)
-            {
-                grid = 2;
-            }
-            else if(row<=5)
-            {
-                grid = 5;
-            }
-            else
-            {
-                grid = 8;
-            }
-        }
+    public void setValue(int value)
+    {
+        this.value = value;
     }
 
     public int getValue()
