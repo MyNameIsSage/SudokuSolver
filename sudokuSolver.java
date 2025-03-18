@@ -33,8 +33,14 @@ public class sudokuSolver
     {
         int row = newlyCompletedBlock.getRow();
         int column = newlyCompletedBlock.getColumn();
-        int gridStartColumn = column/3;
+        //System.out.print("Grid: ");
+        //System.out.println(newlyCompletedBlock.getGrid());
+        int gridStartColumn = 3*(column/3);
         int gridStartRow = 3*(row/3);
+        //System.out.print("grid start column:");
+        //System.out.println(gridStartColumn);
+        //System.out.print("grid start row:");
+        //System.out.println(gridStartRow);
 
         rows[newlyCompletedBlock.getRow()].removeOption(newlyCompletedBlock.getValue());
         columns[newlyCompletedBlock.getColumn()].removeOption(newlyCompletedBlock.getValue());
