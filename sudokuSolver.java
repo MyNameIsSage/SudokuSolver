@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class sudokuSolver
@@ -28,32 +30,38 @@ public class sudokuSolver
         System.out.println("+-------+-------+-------+");
     }
 
+    public static void removeBlockCollectionOption(block toRemove)
+    {
+        rows[toRemove.getRow()].removeOption(toRemove.getValue());
+        columns[toRemove.getColumn()].removeOption(toRemove.getValue());
+        grids[toRemove.getGrid()].removeOption(toRemove.getValue());
+    }
+
     //used whenever a value is entered into grid, updates all rows,columns,gridblocks and blocks effected
     public static void updateOptions(block newlyCompletedBlock)
     {
+        //set the value and remove the set value as an option
+        newlyCompletedBlock.setValue(newlyCompletedBlock.options.get(0));
+        newlyCompletedBlock.removeOption(newlyCompletedBlock.getValue());
+
         int row = newlyCompletedBlock.getRow();
         int column = newlyCompletedBlock.getColumn();
-        //System.out.print("Grid: ");
-        //System.out.println(newlyCompletedBlock.getGrid());
+        int numberEntered = newlyCompletedBlock.getValue();
+
         int gridStartColumn = 3*(column/3);
         int gridStartRow = 3*(row/3);
-        //System.out.print("grid start column:");
-        //System.out.println(gridStartColumn);
-        //System.out.print("grid start row:");
-        //System.out.println(gridStartRow);
 
-        rows[newlyCompletedBlock.getRow()].removeOption(newlyCompletedBlock.getValue());
-        columns[newlyCompletedBlock.getColumn()].removeOption(newlyCompletedBlock.getValue());
-        grids[newlyCompletedBlock.getGrid()].removeOption(newlyCompletedBlock.getValue());
+        //removes the filled in block as an option in each relevant row,column,grid
+        removeBlockCollectionOption(newlyCompletedBlock);
 
         for(int i =0; i <9; i++)
         {
-            puzzle[row][i].removeOption(newlyCompletedBlock.getValue());
+            puzzle[row][i].removeOption(numberEntered);
             if(puzzle[row][i].options.size()==1)
             {
                 queue.offer(puzzle[row][i]);
             }
-            puzzle[i][column].removeOption(newlyCompletedBlock.getValue());
+            puzzle[i][column].removeOption(numberEntered);
             if(puzzle[i][column].options.size()==1)
             {
                 queue.offer(puzzle[i][column]);
@@ -65,13 +73,20 @@ public class sudokuSolver
         {
             for(int j = gridStartColumn; j<gridStartColumn+3; j++)
             {
-                puzzle[i][j].removeOption(newlyCompletedBlock.getValue());
+                puzzle[i][j].removeOption(numberEntered);
                 if(puzzle[i][j].options.size()==1)
                 {
                     queue.offer(puzzle[i][j]);
                 }
             }
         }
+    }
+
+    public static void updateMissingBlocks(block toUpdate)
+    {
+        rows[toUpdate.getRow()].blocksMissingValues.remove(toUpdate);
+        columns[toUpdate.getColumn()].blocksMissingValues.remove(toUpdate);
+        grids[toUpdate.getGrid()].blocksMissingValues.remove(toUpdate);
     }
 
     public static void main(String[] args)
@@ -110,15 +125,19 @@ public class sudokuSolver
                 puzzle[row][column] = new block(currentValue, column, row);
                 if(currentValue!=0)
                 {
-                    rows[row].removeOption(currentValue);
-                    columns[column].removeOption(currentValue);
-                    grids[puzzle[row][column].getGrid()].removeOption(currentValue);
+                    removeBlockCollectionOption(puzzle[row][column]);
+                }
+                else
+                {
+                    rows[row].blocksMissingValues.add(puzzle[row][column]);
+                    columns[column].blocksMissingValues.add(puzzle[row][column]);
+                    grids[puzzle[row][column].getGrid()].blocksMissingValues.add(puzzle[row][column]);
                 }
             }
         }
         printGrid();
         
-        //gets initial options for all individual blocks in the puzzle
+        //gets initial options for all individual blocks in the puzzle by getting the common options from blocks row, column and grid
         for (int row =0; row <9; row++)
         {
             for(int column = 0; column < 9; column++)
@@ -134,7 +153,6 @@ public class sudokuSolver
                         queue.offer(puzzle[row][column]);
                     }
                 }
-                System.out.println(puzzle[row][column].options);
             }    
         }
         while(!queue.isEmpty())
@@ -142,11 +160,36 @@ public class sudokuSolver
             block toUpdate = queue.poll();
             if(toUpdate.options.size()==1)
             {
-                toUpdate.setValue(toUpdate.options.get(0));
-                toUpdate.removeOption(toUpdate.getValue());
                 updateOptions(toUpdate);
-                printGrid();
+                updateMissingBlocks(toUpdate);
             }
         }
+        printGrid();
+
+        //go through each blockCollection starting from the one with least options to try and solve
+        PriorityQueue<blockCollection> pq = new PriorityQueue<>(Comparator.comparingInt(b -> b.options.size()));
+        for (int i =0; i <9; i++)
+        {
+            if(rows[i].options.size()>0)
+            {
+                pq.add(rows[i]);
+            }
+            if(columns[i].options.size()>0)
+            {
+                pq.add(columns[i]);
+            }
+            if(grids[i].options.size()>0)
+            {
+                pq.add(grids[i]);
+            }
+        }
+
+        while(!pq.isEmpty())
+        {
+            blockCollection toCheck = pq.poll();
+            int[] optionsForEachBlock = new int[toCheck.options.size()];
+            
+        }
+            
     }
 }
