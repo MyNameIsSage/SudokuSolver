@@ -52,4 +52,10 @@ public class block
     {
         options.remove(Integer.valueOf(toRemove));
     }
+
+    public void setOptions(int option)
+    {
+        this.options = new ArrayList<>();
+        options.add(option);
+    }
 }

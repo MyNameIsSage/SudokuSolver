@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -93,15 +96,15 @@ public class sudokuSolver
     {
 
         int[][] sudoku = {
-            {1,8,6,0,0,0,0,0,5},
-            {0,0,5,0,0,0,1,0,4},
-            {0,9,0,0,0,1,0,0,0},
-            {0,5,0,1,0,2,0,8,0},
-            {0,0,1,4,0,0,7,0,0},
-            {8,0,0,5,9,7,6,1,0},
-            {2,1,0,0,4,0,0,0,6},
-            {6,0,0,9,0,0,0,4,0},
-            {5,0,0,7,1,0,0,3,8},
+            {3,7,0,0,0,0,0,6,0},
+            {4,0,0,0,0,0,0,8,0},
+            {0,6,0,8,0,9,0,0,0},
+            {0,0,2,7,0,1,0,0,0},
+            {0,0,0,0,0,0,0,1,0},
+            {0,9,6,0,0,0,0,0,3},
+            {0,0,0,0,3,0,0,0,9},
+            {6,1,0,0,0,5,0,2,0},
+            {0,0,0,0,7,0,5,0,0},
         };
         puzzle = new block[9][9];
         rows = new blockCollection[9];
@@ -115,6 +118,7 @@ public class sudokuSolver
             columns[i] = new blockCollection("column " +i);
             grids[i] = new blockCollection("grid " + i);
         }
+        long startTime = System.nanoTime();
 
         //instantiates the blocks in the puzzle and gets initial values for all block collections
         for (int row =0; row <9; row++)
@@ -187,9 +191,58 @@ public class sudokuSolver
         while(!pq.isEmpty())
         {
             blockCollection toCheck = pq.poll();
-            int[] optionsForEachBlock = new int[toCheck.options.size()];
+            System.out.println(toCheck);
+
+            Map<Integer, Integer> map = new HashMap<>();
             
+            //count the occurence of each option for each block in the row,column or grid
+            for (block missinBlock: toCheck.blocksMissingValues) 
+            {
+                for(int option: missinBlock.options)
+                {
+                    map.put(option, map.getOrDefault(option, 0) + 1);
+                }
+            }
+            //list of blocks to fill in, has to be done to avoid concurrentModificationException
+            List<block> toUpdateBlocks = new ArrayList<>();
+
+            //if an option only occurs once, set it and update all effected blocks. add this block collection to queue
+            for (Map.Entry<Integer, Integer> entry : map.entrySet()) 
+            {
+                if (entry.getValue() == 1) 
+                {
+                    Integer key = entry.getKey();
+                    for(block missinBlock: toCheck.blocksMissingValues)
+                    {
+                        if (missinBlock.options.contains(key))
+                        {
+                            toUpdateBlocks.add(missinBlock);
+                        }
+                    }
+                    for(block b : toUpdateBlocks)
+                    {
+                        pq.add(toCheck);
+                        b.setOptions(key);
+                        updateOptions(b);
+                        updateMissingBlocks(b);
+                        while (!queue.isEmpty()) 
+                        {   
+                            block toUpdate = queue.poll();
+                            if (toUpdate.options.size() == 1) 
+                            {
+                                updateOptions(toUpdate);
+                                updateMissingBlocks(toUpdate);
+                            }
+                        }
+                    }
+                    toUpdateBlocks.clear();
+                }
+            }
+            printGrid();
         }
-            
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+        System.out.println("Execution time: " + duration + " ns");
+        System.out.println("Execution time: " + (duration / 1_000_000) + " ms");
     }
 }
