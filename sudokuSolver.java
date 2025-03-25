@@ -9,6 +9,9 @@ import java.util.Queue;
 
 public class sudokuSolver
 {
+    static long startTime;
+    static long endTime;
+    static int blocksFilled;
     static block[][] puzzle;
     static blockCollection[] rows;
     static blockCollection[] columns;
@@ -46,6 +49,15 @@ public class sudokuSolver
         //set the value and remove the set value as an option
         newlyCompletedBlock.setValue(newlyCompletedBlock.options.get(0));
         newlyCompletedBlock.removeOption(newlyCompletedBlock.getValue());
+        blocksFilled++;
+        if(blocksFilled==81)
+        {
+            long endTime = System.currentTimeMillis();
+            long duration = (endTime - startTime);
+            printGrid();
+            System.out.println("Execution time: "+ duration + " ms");
+            System.exit(0);
+        }
 
         int row = newlyCompletedBlock.getRow();
         int column = newlyCompletedBlock.getColumn();
@@ -96,20 +108,21 @@ public class sudokuSolver
     {
 
         int[][] sudoku = {
-            {3,7,0,0,0,0,0,6,0},
-            {4,0,0,0,0,0,0,8,0},
-            {0,6,0,8,0,9,0,0,0},
-            {0,0,2,7,0,1,0,0,0},
-            {0,0,0,0,0,0,0,1,0},
-            {0,9,6,0,0,0,0,0,3},
-            {0,0,0,0,3,0,0,0,9},
-            {6,1,0,0,0,5,0,2,0},
-            {0,0,0,0,7,0,5,0,0},
+            {0,3,4,5,0,6,9,0,0},
+            {0,0,5,4,0,0,0,0,0},
+            {0,0,0,0,8,0,0,1,0},
+            {0,0,0,8,2,3,0,0,7},
+            {1,0,8,7,0,0,3,0,0},
+            {0,0,0,0,0,9,0,0,0},
+            {0,8,7,0,0,0,0,0,0},
+            {0,0,0,0,0,8,0,7,2},
+            {4,0,9,0,0,0,0,0,0},
         };
         puzzle = new block[9][9];
         rows = new blockCollection[9];
         columns = new blockCollection[9];
         grids = new blockCollection[9];
+        blocksFilled = 0;
 
         //creates instances of the blockCollections for puzzle
         for(int i = 0; i <9; i++)
@@ -118,7 +131,7 @@ public class sudokuSolver
             columns[i] = new blockCollection("column " +i);
             grids[i] = new blockCollection("grid " + i);
         }
-        long startTime = System.nanoTime();
+        startTime= System.currentTimeMillis();
 
         //instantiates the blocks in the puzzle and gets initial values for all block collections
         for (int row =0; row <9; row++)
@@ -130,6 +143,7 @@ public class sudokuSolver
                 if(currentValue!=0)
                 {
                     removeBlockCollectionOption(puzzle[row][column]);
+                    blocksFilled++;
                 }
                 else
                 {
@@ -239,10 +253,7 @@ public class sudokuSolver
                 }
             }
             printGrid();
+            System.out.println(blocksFilled);
         }
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime);
-        System.out.println("Execution time: " + duration + " ns");
-        System.out.println("Execution time: " + (duration / 1_000_000) + " ms");
     }
 }
